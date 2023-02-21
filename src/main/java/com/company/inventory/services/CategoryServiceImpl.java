@@ -20,17 +20,17 @@ public class CategoryServiceImpl implements ICategoryService{
 	@Autowired
 	private ICategoryDao categoryDao;
 	
-	CategoryResponseRest response = new CategoryResponseRest();
-	
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntity<CategoryResponseRest> search() {
+		
+		CategoryResponseRest response = new CategoryResponseRest();
 		
 		try {
 			List<Category> category = (List<Category>) categoryDao.findAll();
 			
 			response.getCategoryResponse().setCategory(category);
-			response.setMetadata("Respuest ok","00", "Respuesta exitosa");
+			response.setMetadata("Respuest ok", "00", "Respuesta exitosa");
 			
 		}catch(Exception e) {
 			response.setMetadata("Respuest nok","-1", "Error al consultar");
@@ -44,6 +44,8 @@ public class CategoryServiceImpl implements ICategoryService{
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntity<CategoryResponseRest> searchById(Long id) {
+		
+		CategoryResponseRest response = new CategoryResponseRest();
 		
 		List<Category> list = new ArrayList<>();
 		
@@ -61,6 +63,36 @@ public class CategoryServiceImpl implements ICategoryService{
 			
 		}catch(Exception e) {
 			response.setMetadata("Respuest nok","-1", "Error al consultar por id");
+			e.getStackTrace();
+			return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);		
+		}
+		return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.OK);
+		
+	}
+
+
+	@Override
+	@Transactional
+	public ResponseEntity<CategoryResponseRest> save(Category category) {
+		
+		CategoryResponseRest response = new CategoryResponseRest();
+		List<Category> list = new ArrayList<>();
+		
+		try {
+			
+			Category categorySaved = categoryDao.save(category); //guardamos en bd el objeto y lo asignamos a la variable
+			
+			if (categorySaved != null) {
+				list.add(categorySaved); //agregamos la categoria en la lista
+				response.getCategoryResponse().setCategory(list); //guardamos la lista
+				response.setMetadata("Respuest ok","00", "Categoria guardada");
+			} else {
+				response.setMetadata("Respuest nok","-1", "Categoria no guardada");
+				return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.BAD_REQUEST);
+			}
+			
+		}catch(Exception e) {
+			response.setMetadata("Respuest nok","-1", "Error al guardar la categoria");
 			e.getStackTrace();
 			return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);		
 		}
